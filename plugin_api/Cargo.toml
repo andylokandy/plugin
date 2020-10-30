@@ -5,9 +5,9 @@ authors = ["andylokandy <andylokandy@hotmail.com>"]
 edition = "2018"
 build = "build.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 
 [build-dependencies]
-built = { version = "0.4.3", features = ["git2", "chrono"] }
+rustc_version = "0.3.0"
+ignore = "0.4"
+checksums = "0.6"

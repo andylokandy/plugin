@@ -1,6 +1,6 @@
 [package]
 name = "tidb_query"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["andylokandy <andylokandy@hotmail.com>"]
 edition = "2018"
 

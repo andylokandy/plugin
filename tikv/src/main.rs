@@ -1,4 +1,3 @@
-// use plugin_api::{PluginRegistar, Callback};
 use futures::prelude::*;
 use libloading::{Library, Symbol};
 use plugin_api::*;
@@ -49,16 +48,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn load_plugin() -> Result<PluginRegistrar, Box<dyn std::error::Error>> {
-    let lib = Library::new("../tidb_query/target/debug/libtidb_query.dylib")?;
+fn load_plugin() -> Result<Plugin, Box<dyn std::error::Error>> {
+    let lib = Library::new("../tidb_query/target/debug/libtidb_query.so")?;
+    // let lib = Library::new("../tidb_query/target/debug/libtidb_query.dylib")?;
     unsafe {
-        let register_fn: Symbol<fn() -> PluginRegistrar> = lib.get(b"register")?;
-        let registrar = register_fn();
-        assert_eq!(registrar.plugin_build_info, PluginBuildInfo::get());
-        println!(
-            "Host: plugin loaded: {} {}",
-            registrar.name, registrar.version
-        );
-        Ok(registrar)
+        let register: Symbol<fn() -> Plugin> = lib.get(b"register")?;
+        let plugin = register();
+        std::mem::forget(lib);
+        assert_eq!(plugin.plugin_build_info, PluginBuildInfo::get());
+        println!("Host: plugin loaded: {} {}", plugin.name, plugin.version);
+        Ok(plugin)
     }
 }

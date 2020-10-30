@@ -1,5 +1,5 @@
-use std::pin::Pin;
 use std::future::Future;
+use std::pin::Pin;
 
 pub type BoxFuture<T> = Pin<Box<dyn Future<Output = T> + Send>>;
 
@@ -15,11 +15,12 @@ pub trait Endpoint {
         -> BoxFuture<Result<Vec<u8>, ()>>;
 }
 
-pub struct PluginRegistrar {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Plugin {
     pub name: &'static str,
     pub version: &'static str,
-    pub endpoint_builder: fn() -> Box<dyn Endpoint>,
     pub plugin_build_info: PluginBuildInfo,
+    pub endpoint_builder: fn() -> Box<dyn Endpoint>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -28,21 +29,15 @@ pub struct PluginBuildInfo {
     pub target: &'static str,
     pub host: &'static str,
     pub rustc: &'static str,
-    pub target_arch: &'static str,
 }
 
 impl PluginBuildInfo {
-    pub fn get() -> Self {
+    pub const fn get() -> Self {
         Self {
-            api_version: built_info::PKG_VERSION,
-            target: built_info::TARGET,
-            host: built_info::HOST,
-            rustc: built_info::RUSTC_VERSION,
-            target_arch: built_info::CFG_TARGET_ARCH,
+            api_version: env!("API_VERSION"),
+            target: env!("TARGET"),
+            host: env!("HOST"),
+            rustc: env!("RUSTC_VERSION"),
         }
     }
-}
-
-pub mod built_info {
-    include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }

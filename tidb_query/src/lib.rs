@@ -1,13 +1,13 @@
-use plugin_api::*;
 use futures::prelude::*;
+use plugin_api::*;
 
 #[no_mangle]
-pub fn register() -> PluginRegistrar {
-    PluginRegistrar {
-        name: "tidb_query",
-        version: "0.0.0",
-        endpoint_builder,
+pub fn register() -> Plugin {
+    Plugin {
+        name: env!("CARGO_PKG_NAME"),
+        version: env!("CARGO_PKG_VERSION"),
         plugin_build_info: PluginBuildInfo::get(),
+        endpoint_builder,
     }
 }
 
