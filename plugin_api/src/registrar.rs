@@ -16,7 +16,6 @@ pub struct Plugin {
 pub struct PluginBuildInfo {
     pub api_version: &'static str,
     pub target: &'static str,
-    pub host: &'static str,
     pub rustc: &'static str,
 }
 
@@ -25,7 +24,6 @@ impl PluginBuildInfo {
         Self {
             api_version: env!("API_VERSION"),
             target: env!("TARGET"),
-            host: env!("HOST"),
             rustc: env!("RUSTC_VERSION"),
         }
     }
