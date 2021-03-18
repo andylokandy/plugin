@@ -1,19 +1,7 @@
 use futures::prelude::*;
 use plugin_api::*;
 
-#[no_mangle]
-pub fn register() -> Plugin {
-    Plugin {
-        name: env!("CARGO_PKG_NAME"),
-        version: env!("CARGO_PKG_VERSION"),
-        plugin_build_info: PluginBuildInfo::get(),
-        endpoint_builder,
-    }
-}
-
-fn endpoint_builder() -> Box<dyn Endpoint> {
-    Box::new(TiDBQueryEndpoint::new())
-}
+declare_plugin!(TiDBQueryEndpoint::new());
 
 struct TiDBQueryEndpoint {}
 

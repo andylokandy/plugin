@@ -23,7 +23,7 @@ impl Store for StoreImpl {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "Host: host plugin system info: {:#?}",
-        PluginBuildInfo::get()
+        plugin_api::registrar::PluginBuildInfo::get()
     );
 
     let plugin = load_plugin()?;
@@ -48,14 +48,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn load_plugin() -> Result<Plugin, Box<dyn std::error::Error>> {
+fn load_plugin() -> Result<plugin_api::registrar::Plugin, Box<dyn std::error::Error>> {
     let lib = Library::new("../tidb_query/target/debug/libtidb_query.so")?;
     // let lib = Library::new("../tidb_query/target/debug/libtidb_query.dylib")?;
     unsafe {
-        let register: Symbol<fn() -> Plugin> = lib.get(b"register")?;
-        let plugin = register();
+        let registrar: Symbol<plugin_api::registrar::PluginRegistrar> =
+            lib.get(plugin_api::registrar::PLUGIN_REGISTRAR_SYMBOL)?;
+        plugin_api::allocator::get_allocator();
+        let plugin = registrar(plugin_api::allocator::get_allocator());
         std::mem::forget(lib);
-        assert_eq!(plugin.plugin_build_info, PluginBuildInfo::get());
+        assert_eq!(
+            plugin.plugin_build_info,
+            plugin_api::registrar::PluginBuildInfo::get()
+        );
         println!("Host: plugin loaded: {} {}", plugin.name, plugin.version);
         Ok(plugin)
     }
