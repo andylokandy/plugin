@@ -1,14 +1,15 @@
 use std::alloc::Layout;
 
-pub type AllocFn = unsafe fn(Layout) -> *mut u8;
-pub type DeallocFn = unsafe fn(*mut u8, Layout);
+type AllocFn = unsafe fn(Layout) -> *mut u8;
+type DeallocFn = unsafe fn(*mut u8, Layout);
 
-#[allow(dead_code)]
+#[repr(C)]
 pub struct HostAllocatorPtr {
     alloc_fn: AllocFn,
     dealloc_fn: DeallocFn,
 }
 
+#[cfg(feature = "host")]
 pub fn get_allocator() -> HostAllocatorPtr {
     HostAllocatorPtr {
         alloc_fn: std::alloc::alloc,
@@ -25,7 +26,6 @@ pub mod host_alloctor {
     static ALLOC_FN: AtomicUsize = AtomicUsize::new(0);
     static DEALLOC_FN: AtomicUsize = AtomicUsize::new(0);
 
-    #[doc(hide)]
     pub unsafe fn set_allocator(allocator: HostAllocatorPtr) {
         ALLOC_FN.store(allocator.alloc_fn as usize, Ordering::SeqCst);
         DEALLOC_FN.store(allocator.dealloc_fn as usize, Ordering::SeqCst);

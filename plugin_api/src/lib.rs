@@ -1,4 +1,6 @@
+#[doc(hidden)]
 pub mod allocator;
+#[doc(hidden)]
 pub mod registrar;
 
 use std::future::Future;
@@ -13,7 +15,7 @@ pub trait Store: Send + Sync {
     fn get(&self, key: Key) -> BoxFuture<Value>;
 }
 
-pub trait Endpoint {
+pub trait Endpoint: Send + Sync {
     fn handle_request(&self, req: Vec<u8>, store: Box<dyn Store>)
         -> BoxFuture<Result<Vec<u8>, ()>>;
 }

@@ -1,7 +1,11 @@
 use futures::prelude::*;
 use plugin_api::*;
 
-declare_plugin!(TiDBQueryEndpoint::new());
+declare_plugin!(
+    env!("CARGO_PKG_NAME"),
+    env!("CARGO_PKG_VERSION"),
+    TiDBQueryEndpoint::new()
+);
 
 struct TiDBQueryEndpoint {}
 

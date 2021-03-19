@@ -1,8 +1,10 @@
-use futures::prelude::*;
-use libloading::{Library, Symbol};
-use plugin_api::*;
+mod plugin_manager;
 
 use std::time::Duration;
+
+use futures::prelude::*;
+use plugin_api::*;
+use semver::VersionReq;
 
 struct StoreImpl;
 
@@ -23,45 +25,37 @@ impl Store for StoreImpl {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "Host: host plugin system info: {:#?}",
-        plugin_api::registrar::PluginBuildInfo::get()
+        plugin_api::registrar::BuildInfo::get()
     );
 
-    let plugin = load_plugin()?;
-    let endpoint = (plugin.endpoint_builder)();
+    let plugin_manager = plugin_manager::PluginManager::start("../tidb_query/target/debug");
 
-    let task = async {
+    let task_factory = || async {
         let req = "k1".to_string().into_bytes();
         println!("Host: handle new request: [Proto] Get Key {:?}", &req);
-        let resp = endpoint
-            .handle_request(req, Box::new(StoreImpl))
+        let resp = plugin_manager
+            .handle_request(
+                "tidb_query",
+                &VersionReq::parse("*").unwrap(),
+                req,
+                Box::new(StoreImpl),
+            )
+            .unwrap()
             .await
             .unwrap();
         println!(
-            "Host: coprocessor responce: {:?}",
+            "Host: coprocessor response: {:?}",
             String::from_utf8(resp).unwrap()
         );
     };
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
-    runtime.block_on(task);
+    runtime.block_on(async {
+        loop {
+            task_factory().await;
+            tokio::time::sleep(Duration::from_secs(5)).await;
+        }
+    });
 
     Ok(())
-}
-
-fn load_plugin() -> Result<plugin_api::registrar::Plugin, Box<dyn std::error::Error>> {
-    let lib = Library::new("../tidb_query/target/debug/libtidb_query.so")?;
-    // let lib = Library::new("../tidb_query/target/debug/libtidb_query.dylib")?;
-    unsafe {
-        let registrar: Symbol<plugin_api::registrar::PluginRegistrar> =
-            lib.get(plugin_api::registrar::PLUGIN_REGISTRAR_SYMBOL)?;
-        plugin_api::allocator::get_allocator();
-        let plugin = registrar(plugin_api::allocator::get_allocator());
-        std::mem::forget(lib);
-        assert_eq!(
-            plugin.plugin_build_info,
-            plugin_api::registrar::PluginBuildInfo::get()
-        );
-        println!("Host: plugin loaded: {} {}", plugin.name, plugin.version);
-        Ok(plugin)
-    }
 }
