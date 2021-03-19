@@ -9,7 +9,7 @@ pub static PLUGIN_GET_BUILD_INFO_SYMBOL: &[u8] = b"_plugin_get_build_info";
 pub struct Plugin {
     pub name: &'static str,
     pub version: &'static str,
-    pub endpoint_builder: fn() -> Box<dyn Endpoint>,
+    pub endpoint: Box<dyn Endpoint>,
 }
 
 #[repr(C)]
@@ -33,10 +33,6 @@ impl BuildInfo {
 #[macro_export]
 macro_rules! declare_plugin {
     ($plugin_name: expr, $plugin_version: expr, $endpoint_ctor : expr) => {
-        fn _endpoint_builder() -> Box<dyn $crate::Endpoint> {
-            Box::new($endpoint_ctor)
-        }
-
         #[no_mangle]
         pub unsafe extern "C" fn _plugin_get_build_info() -> $crate::registrar::BuildInfo {
             $crate::registrar::BuildInfo::get()
@@ -50,7 +46,7 @@ macro_rules! declare_plugin {
             $crate::registrar::Plugin {
                 name: $plugin_name,
                 version: $plugin_version,
-                endpoint_builder: _endpoint_builder,
+                endpoint: Box::new($endpoint_ctor),
             }
         }
     };

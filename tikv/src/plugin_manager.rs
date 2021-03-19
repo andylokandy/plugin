@@ -105,7 +105,7 @@ impl PluginManager {
                 plugin.name.to_string(),
                 (
                     Version::parse(plugin.version).unwrap(),
-                    (plugin.endpoint_builder)(),
+                    plugin.endpoint,
                     file.file_name().unwrap().to_owned(),
                 ),
             );

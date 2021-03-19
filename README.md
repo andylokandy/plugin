@@ -26,5 +26,5 @@ Plugin: start to get key [107, 49]
 Host: scaning key [107, 49]
 Host: returning val of key [107, 49]
 Plugin: got val: [91, 118, 97, 108, 93, 32, 111, 102, 32, 107, 49]
-Host: coprocessor responce: "[Proto] val: [91, 118, 97, 108, 93, 32, 111, 102, 32, 107, 49]"
+Host: coprocessor response: "[Proto] val: [91, 118, 97, 108, 93, 32, 111, 102, 32, 107, 49]"
 ```
